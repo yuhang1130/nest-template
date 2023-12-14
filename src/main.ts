@@ -5,6 +5,7 @@ import { NextFunction, Request, Response } from 'express';
 import * as compression from 'compression';
 import helmet from 'helmet';
 import * as bodyParser from 'body-parser';
+import Session from './middleware/session-store/session-store.middleware';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule, {
@@ -20,6 +21,7 @@ async function bootstrap() {
 	app.use(helmet());
 	app.use(bodyParser.json({ limit: '50mb' }));
 	app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+	app.use(Session(AppModule.SessionName))
 
 	const configService = app.get(ConfigService);
 	const port = configService.get('port');

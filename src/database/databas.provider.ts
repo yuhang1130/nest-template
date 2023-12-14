@@ -5,26 +5,24 @@ import { isLocal } from '../config';
 import { Redis } from 'ioredis';
 import { createConnection } from 'mysql2';
 
-
 const logger = new Logger('databaseProvider');
 
-export const DatabaseProvider = {
+export const MysqlProvider = {
 	inject: [ConfigService],
 	provide: 'MYSQL_CONNECTION',
 	useFactory: (config: ConfigService) => {
 		try {
-			const uri = config.get('databaseUrl') || process.env.DB_URL;
-			logger.log(`连接mysql: ${uri}`);
-			const conn = createConnection(uri);
+			const mysqlConf = config.get('mysql');
+			logger.log(`连接mysql: ${JSON.stringify(mysqlConf)}`);
+			const conn = createConnection(mysqlConf);
 			conn.on('error', (e) => {
 				logger.error(`Mysql Connect Error: ${JSON.stringify(e)}`);
-			})
+			});
 			conn.on('connect', () => {
 				logger.log(`Mysql Connect Success`);
-			})
+			});
 			return conn;
-		}
-		catch (e) {
+		} catch (e) {
 			logger.error('Mongo Connect Error: ' + e.message);
 		}
 
@@ -52,21 +50,10 @@ export const RedisProvider = {
 	provide: 'REDIS_CONNECTION',
 	useFactory: (config: ConfigService) => {
 		try {
-			const urls = config.get('redis.url');
-			logger.log(`连接redis: ${urls}`);
-			// const password = config.get('redis.password');
-			// const db = config.get('redis.db') || 0;
-			if (_.isString(urls)) {
-				const redis = new Redis(urls);
-				redis.on('error', (e) => {
-					logger.error(`Redis Error: ${JSON.stringify(e)}`);
-				});
-				redis.on('connect', () => {
-					logger.log(`Redis Connect Success`);
-				});
-				return redis;
-			} else if (_.isArray(urls)) {
-				const cluster = new Redis.Cluster(urls, {
+			const redisConfs = config.get('redis');
+			logger.log(`连接redis: ${JSON.stringify(redisConfs)}`);
+			if (_.isArray(redisConfs)) {
+				const cluster = new Redis.Cluster(redisConfs, {
 					enableReadyCheck: true,
 					enableOfflineQueue: false,
 				});
@@ -78,8 +65,15 @@ export const RedisProvider = {
 				});
 				return cluster;
 			}
-		}
-		catch (e) {
+			const redis = new Redis(redisConfs);
+			redis.on('error', (e) => {
+				logger.error(`Redis Error: ${JSON.stringify(e)}`);
+			});
+			redis.on('connect', () => {
+				logger.log(`Redis Connect Success`);
+			});
+			return redis;
+		} catch (e) {
 			logger.error('Redis Connect Error: ' + e?.message);
 		}
 		return null;

@@ -9,14 +9,16 @@ export default () => ({
 		// expire: 2, // 单位秒
 	},
 	redis: {
-		url: process.env.REDIS_URL || 'redis://localhost:6379',
-		password: process.env.REDIS_PWD,
+		host: process.env.REDIS_HOST || 'localhost',
+		port: process.env.REDIS_PORT || 6379,
+		password: process.env.REDIS_PWD || '',
 		db: process.env.REDIS_DB || 0,
 	},
-	databaseUrl: process.env.DB_URL || 'mysql://root:mysql123@localhost:3306/hh',
-	kafka: {
-		enable: process.env.KAFKA_ENABLE || '0',
-		brokers: process.env.KAFKA_BOOTSTRAP_SERVERS || 'localhost:29092',
-		topic: process.env.KAFKA_WECHAT_MESSAGE_TOPIC || 'wechat_message_topic_dev',
+	mysql: {
+		host: process.env.MYSQL_HOST || 'localhost',
+		port: process.env.MYSQL_PORT || 3306,
+		user: process.env.MYSQL_USER || 'root',
+		password: process.env.MYSQL_PWD || 'mysql123',
+		database: process.env.MYSQL_DB || 'hh',
 	},
 });
