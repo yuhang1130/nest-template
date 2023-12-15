@@ -3,38 +3,43 @@ import {
 	BeforeUpdate,
 	Column,
 	CreateDateColumn,
-	DeleteDateColumn,
 	PrimaryGeneratedColumn,
 	UpdateDateColumn,
 } from 'typeorm';
+import { ENTITY_STATUS } from '../../constants/entities-constant';
 
 export class BaseEntity {
 	@PrimaryGeneratedColumn()
 	id: number;
 
 	@CreateDateColumn({ type: 'timestamp' })
-	createdAt: number;
+	create_time: number;
 
 	@UpdateDateColumn({ type: 'timestamp' })
-	updatedAt: number;
+	updated_time: number;
 
-	@DeleteDateColumn({ type: 'timestamp', select: false })
-	deletedAt: number;
+	@Column({ type: 'number', nullable: true })
+	create_user_id: number;
+
+	@Column({ type: 'number', nullable: true })
+	update_user_id: number;
 
 	@Column({
 		type: 'enum',
-		enum: [1, 2],
-		default: 1,
+		enum: ENTITY_STATUS,
+		default: ENTITY_STATUS.NORMAL,
 	})
-	status: number; // 1启用，2暂停
+	status: number = ENTITY_STATUS.NORMAL;
 
 	@BeforeInsert()
 	handleBeforeInsert() {
 		console.log('BeforeInsert---------');
+		this.create_user_id = 123;
 	}
 
 	@BeforeUpdate()
 	handleBeforeUpdate() {
 		console.log('BeforeUpdate---------');
+		this.update_user_id = 456;
 	}
 }

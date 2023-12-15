@@ -3,24 +3,30 @@ import { Logger } from '@nestjs/common';
 import * as _ from 'lodash';
 import { isLocal } from '../config';
 import { Redis } from 'ioredis';
-import { createConnection } from 'mysql2';
+import { createConnection } from 'typeorm';
+import { DataSourceOptions } from 'typeorm/data-source/DataSourceOptions';
 
 const logger = new Logger('databaseProvider');
 
 export const MysqlProvider = {
 	inject: [ConfigService],
 	provide: 'MYSQL_CONNECTION',
-	useFactory: (config: ConfigService) => {
+	useFactory: async (config: ConfigService) => {
 		try {
-			const mysqlConf = config.get('mysql');
-			logger.log(`连接mysql: ${JSON.stringify(mysqlConf)}`);
-			const conn = createConnection(mysqlConf);
-			conn.on('error', (e) => {
-				logger.error(`Mysql Connect Error: ${JSON.stringify(e)}`);
-			});
-			conn.on('connect', () => {
-				logger.log(`Mysql Connect Success`);
-			});
+			const mysqlConf = config.get('mysql', {});
+			const connectConf: DataSourceOptions = {
+				...mysqlConf,
+				type: 'mysql',
+				entities: [__dirname + '/**/**/*.entity{.ts,.js}'],
+				synchronize: isLocal,
+			};
+			logger.log(`连接mysql: ${JSON.stringify(connectConf)}`);
+			const conn = await createConnection(connectConf);
+			if (conn.isConnected) {
+				logger.log(`MYSQL Connect Success`);
+			} else {
+				logger.error(`MYSQL Connect Error`);
+			}
 			return conn;
 		} catch (e) {
 			logger.error('Mongo Connect Error: ' + e.message);
