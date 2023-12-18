@@ -61,20 +61,6 @@ export class Mysql implements OnApplicationShutdown {
 		return manager.findOne(entity, options);
 	}
 
-	public async findOneAndUpdate<T extends BaseEntity>(
-		entity: new () => T,
-		query: any,
-		update: any,
-		options?: any,
-		returnResultEntity = false,
-	): Promise<any> {
-		// const manager = this.GetManager();
-		// if (returnResultEntity) {
-		// 	return manager.findOneByOrFail(entity, query, update, options).then((result) => result.value);
-		// }
-		// return manager.findOneAndUpdate(entity, query, update, options);
-	}
-
 	public async find<T extends BaseEntity>(entity: new () => T, options: FindManyOptions<T>): Promise<T[]> {
 		const manager = this.GetManager();
 		return manager.find(entity, options);

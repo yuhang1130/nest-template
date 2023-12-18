@@ -1,23 +1,24 @@
 import { AsyncLocalStorage } from 'async_hooks';
 import * as _ from 'lodash';
+import { Request } from 'express';
 
 export interface ALSConfig {
-  request: Request;
-  requestId: string;
+	request: Request;
+	requestId: string;
 }
 
 export const ASLStore = new AsyncLocalStorage<ALSConfig>();
 
 export const AlsGetRequest = (): Request => {
-  return ASLStore.getStore().request;
+	return ASLStore.getStore().request;
 };
 
 export const ALSSetRequest = (data: Request) => {
-  const config = ASLStore.getStore();
-  return _.set(config, 'request', data);
+	const config = ASLStore.getStore();
+	return _.set(config, 'request', data);
 };
 
 export const ALSSetRequestId = (requestId: string) => {
-  const config = ASLStore.getStore();
-  return _.set(config, 'requestId', requestId);
+	const config = ASLStore.getStore();
+	return _.set(config, 'requestId', requestId);
 };

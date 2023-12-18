@@ -17,7 +17,7 @@ export const MysqlProvider = {
 			const connectConf: DataSourceOptions = {
 				...mysqlConf,
 				type: 'mysql',
-				entities: [__dirname + '/**/**/*.entity{.ts,.js}'],
+				entities: [__dirname + '/../**/**/*.entity{.ts,.js}'],
 				synchronize: isLocal,
 			};
 			logger.log(`连接mysql: ${JSON.stringify(connectConf)}`);
@@ -29,25 +29,10 @@ export const MysqlProvider = {
 			}
 			return conn;
 		} catch (e) {
-			logger.error('Mongo Connect Error: ' + e.message);
+			logger.error('MYSQL Connect Error: ' + e.message);
 		}
 
 		return null;
-
-		// const uri = config.get('databaseUrl') || process.env.DB_URL;
-		// logger.log(`连接mysql: ${uri}`);
-		// return {
-		// 	type: 'mysql',
-		// 	// host: configService.get('HOST'),
-		// 	// port: +configService.get('PORT'),
-		// 	// username: configService.get('USERNAME'),
-		// 	// password: configService.get('PASSWORD'),
-		// 	// database: configService.get('DATABASE'),
-		// 	url: uri,
-		// 	// [__dirname + '/**/**/*.entity{.ts,.js}']
-		// 	entities: [__dirname + '/**/**/*.entity{.ts,.js}'],
-		// 	synchronize: isLocal,
-		// };
 	},
 };
 

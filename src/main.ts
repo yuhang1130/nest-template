@@ -7,6 +7,7 @@ import helmet from 'helmet';
 import * as bodyParser from 'body-parser';
 import Session from './middleware/session-store/session-store.middleware';
 import { ValidationPipe } from '@nestjs/common';
+import { RedisSdk } from './database/redis';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule, {
@@ -22,7 +23,8 @@ async function bootstrap() {
 	app.use(helmet());
 	app.use(bodyParser.json({ limit: '50mb' }));
 	app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
-	app.use(Session(AppModule.SessionName))
+	const configService = app.get(ConfigService);
+	app.use(Session(app.get(RedisSdk), configService, AppModule.SessionName));
 
 	app.useGlobalPipes(
 		new ValidationPipe({
@@ -32,7 +34,7 @@ async function bootstrap() {
 		}),
 	);
 
-	const configService = app.get(ConfigService);
+
 	const port = configService.get('port');
 	await app.listen(port).then(() => {
 		console.log(`Server Start: http://localhost:${port}`);

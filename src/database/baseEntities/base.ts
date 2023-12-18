@@ -18,10 +18,10 @@ export class BaseEntity {
 	@UpdateDateColumn({ type: 'timestamp' })
 	updated_time: number;
 
-	@Column({ type: 'number', nullable: true })
+	@Column()
 	create_user_id: number;
 
-	@Column({ type: 'number', nullable: true })
+	@Column()
 	update_user_id: number;
 
 	@Column({
@@ -31,10 +31,17 @@ export class BaseEntity {
 	})
 	status: number = ENTITY_STATUS.NORMAL;
 
+	@Column({
+		type: 'boolean',
+		default: false,
+	})
+	is_deleted: boolean = false;
+
 	@BeforeInsert()
 	handleBeforeInsert() {
 		console.log('BeforeInsert---------');
 		this.create_user_id = 123;
+		this.update_user_id = 123;
 	}
 
 	@BeforeUpdate()

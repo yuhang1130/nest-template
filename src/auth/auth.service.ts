@@ -19,8 +19,7 @@ export class AuthService {
 	decode(token: string): AuthJwtToken|null {
 		try {
 			return this.jwtService.decode(token) as AuthJwtToken|null;
-		}
-		catch (e) {
+		} catch (e) {
 			this.logger.error(JSON.stringify(e));
 		}
 

@@ -1,6 +1,6 @@
 import { Controller, Post, Body, SetMetadata, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto, LoginResultDto, LoginUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { IsAdmin } from '../../constants/user-constant';
 import { AuthGuard } from '../../auth/auth.guard';
@@ -10,9 +10,14 @@ import { UserEntity } from './entities/user.entity';
 export class UserController {
 	constructor(private readonly userService: UserService) {}
 
-	@Post('create')
+	@Post('register')
 	async register(@Body() data: CreateUserDto): Promise<UserEntity> {
 		return await this.userService.register(data);
+	}
+
+	@Post('login')
+	async login(@Body() data: LoginUserDto): Promise<LoginResultDto> {
+		return await this.userService.login(data);
 	}
 
 	@SetMetadata(IsAdmin, true)

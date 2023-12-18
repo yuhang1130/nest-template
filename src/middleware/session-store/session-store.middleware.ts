@@ -1,11 +1,13 @@
 import * as session from 'express-session';
 import RedisStore from 'connect-redis';
-import { RedisProvider } from '../../database/databas.provider';
+import { RedisSdk } from '../../database/redis';
+import { RedisSdkKey } from '../../constants/redis-key';
+import { ConfigService } from '@nestjs/config';
 
-const Session = (SessionName: string) => {
+const Session = (redisSdk: RedisSdk, config: ConfigService, SessionName: string) => {
 	const store = new RedisStore({
-		client: RedisProvider,
-		prefix: 'session:',
+		client: redisSdk,
+		prefix: `${config.get('redisPrefix', 'nest_template')}:${RedisSdkKey.SessionPrefix}`,
 	});
 
 	return session({
