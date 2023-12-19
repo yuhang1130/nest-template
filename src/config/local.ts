@@ -21,5 +21,7 @@ export default () => ({
 		password: process.env.MYSQL_PWD || 'mysql123',
 		database: process.env.MYSQL_DB || 'hh',
 	},
-	redisPrefix: 'nest_template',
+	redisPrefix: process.env.REDIS_PREFIX || 'nest_template',
+	svcNotLimit: process.env.SVC_NOT_LIMIT || 1,
+	svcHosts: process.env.SVC_HOSTS || [],
 });

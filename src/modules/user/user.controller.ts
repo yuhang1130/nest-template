@@ -1,6 +1,7 @@
-import { Controller, Post, Body, SetMetadata, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, SetMetadata, UseGuards, Res } from '@nestjs/common';
+import { Response } from 'express';
 import { UserService } from './user.service';
-import { CreateUserDto, LoginResultDto, LoginUserDto } from './dto/create-user.dto';
+import { CreateUserDto, LoginResultDto, LoginUserDto, PartialUser, SessionDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { IsAdmin } from '../../constants/user-constant';
 import { AuthGuard } from '../../auth/auth.guard';
@@ -22,6 +23,24 @@ export class UserController {
 
 	@SetMetadata(IsAdmin, true)
 	@UseGuards(AuthGuard)
+	@Post('logout')
+	async logout(@Res() res: Response): Promise<boolean> {
+		res.clearCookie('cookie');
+		await this.userService.logout();
+
+		res.end(
+			JSON.stringify({
+				data: true,
+				code: 0,
+			}),
+		);
+
+		return true;
+	}
+	v;
+
+	@SetMetadata(IsAdmin, true)
+	@UseGuards(AuthGuard)
 	@Post('create')
 	async create(@Body() data: CreateUserDto): Promise<boolean> {
 		return await this.userService.create(data);
@@ -29,9 +48,9 @@ export class UserController {
 
 	@SetMetadata(IsAdmin, true)
 	@UseGuards(AuthGuard)
-	@Post('find')
-	async find(@Body() data: any) {
-		return this.userService.findOne(data);
+	@Post('info')
+	async info(): Promise<PartialUser> {
+		return await this.userService.info();
 	}
 
 	@SetMetadata(IsAdmin, true)

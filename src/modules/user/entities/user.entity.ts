@@ -13,7 +13,7 @@ export class UserEntity extends BaseEntity {
 	salt: string;
 
 	@Column({ type: 'boolean', comment: '是否为管理员', default: false })
-	is_admin: boolean;
+	is_admin: boolean = false;
 
 	@Column({ type: 'varchar', length: 20 })
 	phone: string;

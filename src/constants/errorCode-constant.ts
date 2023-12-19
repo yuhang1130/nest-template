@@ -5,6 +5,8 @@ export enum ErrorCode {
 	TokenInvalid,
 	NoLogin,
 	NameExisted,
+	AccessDenied,
+	NotAuth,
 
 	// user
 	UserParam = 20001,
@@ -21,6 +23,8 @@ export const ErrorMessage = {
 	[ErrorCode.TokenInvalid]: 'Token Invalid',
 	[ErrorCode.NoLogin]: '未登录',
 	[ErrorCode.NameExisted]: '"{$0}"名称已存在',
+	[ErrorCode.AccessDenied]: 'Access Denied',
+	[ErrorCode.NotAuth]: '无权访问',
 
 	// user 用户
 	[ErrorCode.UserParam]: '缺少参数({$0})',

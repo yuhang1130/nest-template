@@ -1,5 +1,5 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { CreateUserDto, LoginResultDto, LoginUserDto, SessionDto } from './dto/create-user.dto';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { CreateUserDto, LoginResultDto, LoginUserDto, PartialUser, SessionDto } from './dto/create-user.dto';
 import { ConfigService } from '@nestjs/config';
 import { UserEntity } from './entities/user.entity';
 import { CustomException } from '../../exceptions/custom.exception';
@@ -8,11 +8,14 @@ import * as crypto from 'bcrypt';
 import * as _ from 'lodash';
 import { Mysql } from '../../database/msyql';
 import { ENTITY_STATUS } from '../../constants/entities-constant';
-import { AlsGetRequest } from '../../async-storage/async-storage';
+import { AlsGetRequest, AlsGetUserSession } from '../../async-storage/async-storage';
 import { AuthService } from '../../auth/auth.service';
+import { UserNamespace } from '../../constants/user-constant';
+import { pick } from 'lodash';
 
 @Injectable()
 export class UserService {
+	logger = new Logger(UserService.name);
 	constructor(
 		readonly configService: ConfigService,
 		readonly auth: AuthService,
@@ -21,7 +24,6 @@ export class UserService {
 
 	async register(data: CreateUserDto): Promise<UserEntity> {
 		const existUser = await this.getUserByName(data.user_name);
-		console.log('existUser-----', existUser, existUser.create_time.valueOf());
 		if (existUser) {
 			throw new CustomException(ErrorCode.UserExisted);
 		}
@@ -42,7 +44,6 @@ export class UserService {
 		}
 
 		const match = crypto.compareSync(data.pass_word, existUser.pass_word);
-		console.log('match-----', match);
 		if (!match) {
 			throw new CustomException(ErrorCode.UserOrPsw);
 		}
@@ -52,13 +53,14 @@ export class UserService {
 		const UserSession: SessionDto = {
 			UserId: existUser.id,
 			OpUserId: existUser.id,
+			User: {
+				..._.pick(existUser, ['user_name', 'is_admin', 'phone', 'email']),
+			},
 			Rights: [],
 		};
-		console.log('AlsGetRequest().session----', AlsGetRequest().session);
 		AlsGetRequest().session['data'] = UserSession;
 		AlsGetRequest().session.save();
 
-		console.log('AlsGetRequest().sessionID----', AlsGetRequest().sessionID);
 		const result: LoginResultDto = new LoginResultDto();
 		result.token = this.auth.signIn({ id: AlsGetRequest().sessionID });
 
@@ -73,8 +75,16 @@ export class UserService {
 		});
 	}
 
+	async logout(): Promise<void> {
+		const sessionID = AlsGetRequest().sessionID;
+		const UserSession: SessionDto = AlsGetRequest().session[UserNamespace];
+		const user_name = UserSession?.User?.user_name;
+		AlsGetRequest().session.destroy(() => {
+			this.logger.warn(`Logout Success. sessionID: ${sessionID}, user_name: ${user_name};`);
+		});
+	}
+
 	async create(data: CreateUserDto): Promise<boolean> {
-		console.log('configService-------', this.configService);
 
 		return true;
 	}
@@ -83,8 +93,8 @@ export class UserService {
 		return `This action returns all user`;
 	}
 
-	findOne(id: number) {
-		return `This action returns a #${id} user`;
+	async info(): Promise<PartialUser> {
+		return AlsGetUserSession().User;
 	}
 
 	update(data: any) {

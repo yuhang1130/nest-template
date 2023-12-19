@@ -8,6 +8,8 @@ import * as bodyParser from 'body-parser';
 import Session from './middleware/session-store/session-store.middleware';
 import { ValidationPipe } from '@nestjs/common';
 import { RedisSdk } from './database/redis';
+import { JwtParseMiddleware } from './middleware/jwt-parse/jwt-parse.middleware';
+import { AuthService } from './auth/auth.service';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule, {
@@ -24,8 +26,9 @@ async function bootstrap() {
 	app.use(bodyParser.json({ limit: '50mb' }));
 	app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 	const configService = app.get(ConfigService);
+	app.use(JwtParseMiddleware(app.get(AuthService), AppModule.SessionName));
 	app.use(Session(app.get(RedisSdk), configService, AppModule.SessionName));
-
+	// app.useGlobalInterceptors(new TransformInterceptor());
 	app.useGlobalPipes(
 		new ValidationPipe({
 			transform: true,
