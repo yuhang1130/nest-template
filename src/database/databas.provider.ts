@@ -3,8 +3,8 @@ import { Logger } from '@nestjs/common';
 import * as _ from 'lodash';
 import { isLocal } from '../config';
 import { Redis } from 'ioredis';
-import { createConnection } from 'typeorm';
-import { DataSourceOptions } from 'typeorm/data-source/DataSourceOptions';
+import { DataSource } from 'typeorm';
+import { MysqlConnectionOptions } from 'typeorm/driver/mysql/MysqlConnectionOptions';
 
 const logger = new Logger('databaseProvider');
 
@@ -14,20 +14,21 @@ export const MysqlProvider = {
 	useFactory: async (config: ConfigService) => {
 		try {
 			const mysqlConf = config.get('mysql', {});
-			const connectConf: DataSourceOptions = {
+			const connectConf: MysqlConnectionOptions = {
 				...mysqlConf,
 				type: 'mysql',
 				entities: [__dirname + '/../**/**/*.entity{.ts,.js}'],
 				synchronize: isLocal,
 			};
 			logger.log(`连接mysql: ${JSON.stringify(connectConf)}`);
-			const conn = await createConnection(connectConf);
-			if (conn.isConnected) {
+			const dataSource = new DataSource(connectConf);
+			await dataSource.initialize();
+			if (dataSource.isInitialized) {
 				logger.log(`MYSQL Connect Success`);
 			} else {
 				logger.error(`MYSQL Connect Error`);
 			}
-			return conn;
+			return dataSource;
 		} catch (e) {
 			logger.error('MYSQL Connect Error: ' + e.message);
 		}

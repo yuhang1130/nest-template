@@ -1,4 +1,7 @@
-FROM node:16.13.2
+FROM node:16.20.2
+
+# 设置实例个数
+ENV INSTANCES=2
 
 # 设置时区
 ENV TZ=Asia/Shanghai \
@@ -16,7 +19,7 @@ COPY package.json package-lock.json ./
 
 # 安装Pm2
 RUN npm config set registry https://registry.npm.taobao.org && \
-	npm install pm2@4.5.4 -g
+	npm install pm2@5.3.0 -g
 
 #install
 RUN npm install

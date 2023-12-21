@@ -23,14 +23,16 @@ services:
 
   mysql_server:
     container_name: mysql_container
-    image: daocloud.io/library/mysql:8.0.20 # 使用官方镜像
+    image: mysql:8.0.20 # 使用官方镜像
     ports:
       - 3306:3306 # 本机端口:容器端口
     restart: on-failure
+    # 修改mysql8.x的加密身份连接方式(caching_sha2_password),兼容许多旧的连接工具不支持
+    command: --default-authentication-plugin=mysql_native_password
     environment:
       - MYSQL_ROOT_PASSWORD=mysql123
       - MYSQL_DATABASE=hh
-      - MYSQL_USER=user123
+      - MYSQL_USER=mysqlName
       - MYSQL_PASSWORD=mysql123
     volumes:
       - ./deploy/mysql/db:/var/lib/mysql # 用来存放了数据库表文件
@@ -40,8 +42,6 @@ services:
       - ./deploy/mysql/init:/docker-entrypoint-initdb.d/ # 存放初始化的脚本
     networks:
       - nest-template
-    # 解决外部无法访问
-    command: --default-authentication-plugin=mysql_native_password
 
   nest_server: # nestjs服务
     container_name: nest_container
@@ -61,7 +61,7 @@ services:
       - REDIS_DB=0
       - MYSQL_HOST=mysql_container # 通过容器名去访问
       - MYSQL_PORT=3306
-      - MYSQL_USER=root
+      - MYSQL_USER=mysqlName
       - MYSQL_PWD=mysql123
       - MYSQL_DB=hh
     networks:

@@ -1,7 +1,7 @@
 import { Global, Module } from '@nestjs/common';
 import { MysqlProvider, RedisProvider } from './databas.provider';
 import { ConfigModule } from '@nestjs/config';
-import { Mysql } from './msyql';
+import { Mysql } from './mysql';
 import { RedisSdk } from './redis';
 
 @Global()

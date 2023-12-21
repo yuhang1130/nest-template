@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger, OnApplicationShutdown } from '@nestjs/common';
-import { Connection, EntityMetadata, EntityTarget, FindManyOptions, FindOneOptions, ObjectType } from 'typeorm';
+import { Connection, EntityMetadata, EntityTarget, FindManyOptions, FindOneOptions } from 'typeorm';
 import { SessionDto } from '../middleware/session-store/session-dto';
 import { Repository } from 'typeorm/repository/Repository';
 import { EntityManager } from 'typeorm/entity-manager/EntityManager';

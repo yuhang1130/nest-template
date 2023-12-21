@@ -1,17 +1,16 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { CreateUserDto, LoginResultDto, LoginUserDto, PartialUser, SessionDto } from './dto/create-user.dto';
 import { ConfigService } from '@nestjs/config';
 import { UserEntity } from './entities/user.entity';
 import { CustomException } from '../../exceptions/custom.exception';
 import { ErrorCode } from '../../constants/errorCode-constant';
-import * as crypto from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import * as _ from 'lodash';
-import { Mysql } from '../../database/msyql';
+import { Mysql } from '../../database/mysql';
 import { ENTITY_STATUS } from '../../constants/entities-constant';
 import { AlsGetRequest, AlsGetUserSession } from '../../async-storage/async-storage';
 import { AuthService } from '../../auth/auth.service';
 import { UserNamespace } from '../../constants/user-constant';
-import { pick } from 'lodash';
 
 @Injectable()
 export class UserService {
@@ -28,8 +27,8 @@ export class UserService {
 			throw new CustomException(ErrorCode.UserExisted);
 		}
 
-		const salt = crypto.genSaltSync(12);
-		data.pass_word = crypto.hashSync(data.pass_word, salt);
+		const salt = bcrypt.genSaltSync(12);
+		data.pass_word = bcrypt.hashSync(data.pass_word, salt);
 		const userData = _.pick(data, ['user_name', 'pass_word', 'phone', 'email']);
 		const newUser = await this.mysql.create(UserEntity, { ...userData, salt });
 
@@ -43,7 +42,7 @@ export class UserService {
 			throw new CustomException(ErrorCode.UserNotExist);
 		}
 
-		const match = crypto.compareSync(data.pass_word, existUser.pass_word);
+		const match = bcrypt.compareSync(data.pass_word, existUser.pass_word);
 		if (!match) {
 			throw new CustomException(ErrorCode.UserOrPsw);
 		}

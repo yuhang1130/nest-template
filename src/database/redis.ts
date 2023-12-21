@@ -94,12 +94,10 @@ export class RedisSdk implements BeforeApplicationShutdown {
 
 	// 这些get和set方法，会话存储会用到
 	private async get(key: string): Promise<string | null> {
-		console.log('get----', key);
 		return this.client.get(key);
 	}
 
 	private async set(key: string, v: string, opts: { ttl: number; reset?: boolean }): Promise<string | number> {
-		console.log('set----', key);
 		if (opts?.reset) {
 			return this.client.del(key);
 		}

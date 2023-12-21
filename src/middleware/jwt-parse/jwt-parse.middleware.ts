@@ -15,7 +15,7 @@ export const JwtParseMiddleware = (authService: AuthService, sessionName: string
 			const session = authService.decode(token);
 			if (session && session.id) {
 				// Hack: 有token的以token为准，删除cookie中存的sessionID(express-session以header中的cookie优先级为最高)
-				removeHeaderCookie(req, sessionName);
+				// removeHeaderCookie(req, sessionName);
 				req.signedCookies = {
 					// Fix: cookie-parser Object[null property]
 					...req.signedCookies,

@@ -21,7 +21,6 @@ export class UserController {
 		return await this.userService.login(data);
 	}
 
-	@SetMetadata(IsAdmin, true)
 	@UseGuards(AuthGuard)
 	@Post('logout')
 	async logout(@Res() res: Response): Promise<boolean> {
@@ -37,7 +36,6 @@ export class UserController {
 
 		return true;
 	}
-	v;
 
 	@SetMetadata(IsAdmin, true)
 	@UseGuards(AuthGuard)
@@ -46,7 +44,7 @@ export class UserController {
 		return await this.userService.create(data);
 	}
 
-	@SetMetadata(IsAdmin, true)
+	// @SetMetadata(IsAdmin, true)
 	@UseGuards(AuthGuard)
 	@Post('info')
 	async info(): Promise<PartialUser> {
