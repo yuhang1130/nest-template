@@ -3,54 +3,45 @@ version: "1.0"
 services:
   # docker容器启动的redis默认是没有redis.conf的配置文件，所以用docker启动redis之前，需要先去官网下载redis.conf的配置文件
   redis_server: # 服务名称
+    image: redis:7.0 # 使用官方镜像
     container_name: redis_container # 容器名称
-    image: redis:7.2.3 # 使用官方镜像
-    # 配置redis.conf方式启动
-    # command: redis-server /usr/local/etc/redis/redis.conf --requirepass 123456 --appendonly yes # 设置redis登录密码 123456、--appendonly yes：这个命令是用于开启redis数据持久化
-    # 无需配置文件方式启动
-    command: redis-server --appendonly yes # 开启redis数据持久化
     ports:
-      - 6379:6379 # 本机端口:容器端口
-    restart: on-failure # 自动重启
+      - "6379:6379" # 本机端口:容器端口
     volumes:
-      - ./deploy/redis/db:/data # 把持久化数据挂载到宿主机
-      - ./deploy/redis/conf/redis.conf:/usr/local/etc/redis/redis.conf  # 把redis的配置文件挂载到宿主机
-      - ./deploy/redis/logs:/logs # 用来存放日志
+      - redis_data:/data # 数据卷，持久化Redis数据
+    restart: always # 自动重启
     environment:
       - TZ=Asia/Shanghai  # 解决容器 时区的问题
-    networks:
-      - nest-template
 
-  mysql_server:
+  mysql_server: # 服务名称
+    image: mysql:8.0 # 使用官方镜像
     container_name: mysql_container
-    image: mysql:8.0.20 # 使用官方镜像
-    ports:
-      - 3306:3306 # 本机端口:容器端口
-    restart: on-failure
-    # 修改mysql8.x的加密身份连接方式(caching_sha2_password),兼容许多旧的连接工具不支持
-    command: --default-authentication-plugin=mysql_native_password
     environment:
       - MYSQL_ROOT_PASSWORD=mysql123
       - MYSQL_DATABASE=hh
       - MYSQL_USER=mysqlName
       - MYSQL_PASSWORD=mysql123
+      # 设置默认的身份验证插件为 mysql_native_password
+      - MYSQL_AUTHENTICATION_PLUGIN=mysql_native_password
+    ports:
+      - "3306:3306" # 本机端口:容器端口
     volumes:
-      - ./deploy/mysql/db:/var/lib/mysql # 用来存放了数据库表文件
-      - ./deploy/mysql/conf/my.cnf:/etc/my.cnf # 存放自定义的配置文件
-      # 我们在启动MySQL容器时自动创建我们需要的数据库和表
-      # mysql官方镜像中提供了容器启动时自动docker-entrypoint-initdb.d下的脚本的功能
-      - ./deploy/mysql/init:/docker-entrypoint-initdb.d/ # 存放初始化的脚本
-    networks:
-      - nest-template
+      - mysql_data:/var/lib/mysql # 数据卷，持久化MySQL数据
+    restart: always
+    # 修改mysql8.x的加密身份连接方式(caching_sha2_password),兼容许多旧的连接工具不支持
+#    command: --default-authentication-plugin=mysql_native_password
 
   nest_server: # nestjs服务
     container_name: nest_container
+    depends_on: # 依赖于redis和mysql，在启动本服务之前会先启动依赖的服务
+      - mysql_server
+      - redis_server
+    ports:
+      - "9090:9090"
     build: # 根据Dockerfile构建镜像
       context: ./
       dockerfile: Dockerfile
-    ports:
-      - 9090:9090
-    restart: on-failure # 设置自动重启，这一步必须设置，主要是存在mysql还没有启动完成就启动了node服务
+    restart: on-failure
     environment:
       - DEPLOY_ENV=local
       - PORT=9090
@@ -64,14 +55,8 @@ services:
       - MYSQL_USER=mysqlName
       - MYSQL_PWD=mysql123
       - MYSQL_DB=hh
-    networks:
-      - nest-template
-    depends_on: # 依赖于redis和mysql，在启动本服务之前会先启动依赖的服务
-      - mysql_server
-      - redis_server
 
-# 声明一下网桥  nest-template。
-# 重要：将所有服务都挂载在同一网桥即可通过容器名来互相通信了
-# 如nestjs连接mysql和redis，可以通过容器名来互相通信
-networks:
-  nest-template:
+# 定义数据卷
+volumes:
+  mysql_data: # MySQL数据卷
+  redis_data: # Redis数据卷

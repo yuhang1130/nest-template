@@ -19,6 +19,7 @@ export const MysqlProvider = {
 				type: 'mysql',
 				entities: [__dirname + '/../**/**/*.entity{.ts,.js}'],
 				synchronize: isLocal,
+				connectorPackage: 'mysql2',
 			};
 			logger.log(`连接mysql: ${JSON.stringify(connectConf)}`);
 			const dataSource = new DataSource(connectConf);
